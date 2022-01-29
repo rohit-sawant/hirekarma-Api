@@ -20,12 +20,14 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.NumberToTextConverter;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hirekarma.entity.Student;
 
 public class Helper {
 
+	
 //	To get if the file is excel or not
 	public static boolean checkExcelFormat(MultipartFile file) {
 	
@@ -44,41 +46,56 @@ public class Helper {
 			
 			int rowNumber = 0;
 			
+//			Reading each row
 			Iterator<Row> iterator = workSheet.iterator();
 			
 			while(iterator.hasNext()) {
+				
 				Row row = iterator.next();
 				if(rowNumber==0) {
 					rowNumber++;
 					continue;
 				}
+				
 				Iterator<Cell> cells = row.iterator();
+				
 				int cid = 0 ; 
 				Student student = new Student();
+				
+//				reading each cell
 				while(cells.hasNext()) {
+					
 					Cell cell = cells.next();
 					switch(cid) {
-					case 0:
-						
-						student.setName(cell.getStringCellValue());
-						break;
-					case 1:
-						student.setEmail(cell.getStringCellValue());
-						break;
-					case 2:
-						student.setPhone(NumberToTextConverter.toText(cell.getNumericCellValue()));
-						break;
-					default:
-						break;
+					
+						case 0:
+							student.setName(cell.getStringCellValue());
+							break;
+							
+						case 1:
+							student.setEmail(cell.getStringCellValue());
+							break;
+							
+						case 2:
+							
+							student.setPhone(NumberToTextConverter.toText(cell.getNumericCellValue()));
+							break;
+							
+						default:
+							break;
 					}
+					
 					cid++;
 				}
+				
+//				adding each student to list
 				students.add(student);
 			}
 			
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		System.out.print(students);
 		return students;
 	}
@@ -89,26 +106,18 @@ public class Helper {
 			Sheet sheet = workbook.createSheet("Students");
 			
 			Row row = sheet.createRow(0);
-			
-			// Define header cell style
-	        CellStyle headerCellStyle = workbook.createCellStyle();
-	        headerCellStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-	        headerCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 	        
-	        // Creating header cells 
+//	         Creating header cells 
 	        Cell cell = row.createCell(0);
 	        cell.setCellValue("Name");
-	        cell.setCellStyle(headerCellStyle);
 	        
 	        cell = row.createCell(1);
 	        cell.setCellValue("Email");
-	        cell.setCellStyle(headerCellStyle);
 	
 	        cell = row.createCell(2);
 	        cell.setCellValue("Phone");
-	        cell.setCellStyle(headerCellStyle);
 	        
-	        // Creating data rows for each student
+//	        Creating data rows for each student
 	        for(int i = 0; i < students.size(); i++) {
 	        	Row dataRow = sheet.createRow(i + 1);
 	        	dataRow.createCell(0).setCellValue(students.get(i).getName());
@@ -116,7 +125,7 @@ public class Helper {
 	        	dataRow.createCell(2).setCellValue(students.get(i).getPhone());
 	        }
 	
-	        // Making size of column auto resize to fit with data
+//	         Making size of column auto resize to fit with data
 	        sheet.autoSizeColumn(0);
 	        sheet.autoSizeColumn(1);
 	        sheet.autoSizeColumn(2);
