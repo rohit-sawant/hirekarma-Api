@@ -1,1 +1,1 @@
-web: java -Dserver.port=$PORT -jar target/HireKarma-1.0-SNAPSHOT.jar
+web: java $JAVA_OPTS -jar target/HireKarma-1.0-SNAPSHOT.jar --server.port=$PORT $JAR_OPTS
