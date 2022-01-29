@@ -3,6 +3,7 @@ package com.hirekarma.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,21 +39,20 @@ public class StudentController {
 	private EmailSenderService service;
 	@Autowired
 	private StudentService studentService;
-	
-	
 
 	Logger logger = LoggerFactory.getLogger(StudentService.class);
 
 //	importing student into database, and sending mail to all the students using async
 	@PostMapping("/student/importExcel")
 	public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
+		Map<String, String> resultMap = null;
 		try {
-			
+
 			if (Helper.checkExcelFormat(file)) {
-				
+
 				List<Student> students = this.studentService.save(file);
 				long start = System.currentTimeMillis();
-				
+
 //				sending each student a mail
 				for (Student student : students) {
 
@@ -62,66 +62,69 @@ public class StudentController {
 					}
 
 				}
-				
+
 				long end = System.currentTimeMillis();
 				logger.info("Total time {}", (end - start));
-				
-				
-				
-				return ResponseEntity.ok(new JSONObject().put("message", "imported and mail sent succesfully"));
-				
+
+				System.out.println("succesful");
+				resultMap = new HashMap<String, String>();
+				resultMap.put("message", "imported and mail send succesfully");
+				return ResponseEntity.ok(resultMap);
+
 			}
 		} catch (Exception e) {
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new JSONObject().put("message", "something went wrong"));
-		
-		}
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new JSONObject().put("message", "Please upload excel file"));
+			resultMap = new HashMap<String, String>();
+			resultMap.put("message", "something went wrong");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resultMap);
 
+		}
+		resultMap = new HashMap<String, String>();
+		resultMap.put("message", "Please upload excel file");
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultMap);
 	}
 
 //	return response from Excel
 	@GetMapping("/student/readExcel")
 	public ResponseEntity<?> readJsonFromExcel(@RequestParam("file") MultipartFile file) {
-		
+		Map<String, String> resultMap = null;
 		if (Helper.checkExcelFormat(file)) {
-			
+
 			List<Student> students = null;
-			
+
 			try {
-				
+
 				students = Helper.convertExcelToListOfStudent(file.getInputStream());
 				return ResponseEntity.ok(students);
-				
-			} catch (IOException e) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new JSONObject().put("message", "Please upload excel file"));
+
+			} catch (Exception e) {
+				resultMap = new HashMap<String, String>();
+				resultMap.put("message", "something went wrong");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resultMap);
+
 			}
 		}
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new JSONObject().put("message", "Please upload excel file"));
 
+		resultMap = new HashMap<String, String>();
+		resultMap.put("message", "Please upload excel file");
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultMap);
 	}
 
-	
 //	get all the student
 	@GetMapping("/student")
 	public ResponseEntity<?> getStudents() {
 		return ResponseEntity.ok(this.studentService.getAllStudents());
 	}
 
-	
 //	Exporting excel file from database
 	@GetMapping("/student/exportExcel")
 	public void downloadExcelFile(HttpServletResponse response) throws IOException {
-		
+
 		List<Student> students = this.studentService.getAllStudents();
-		
+
 		response.setContentType("application/octet-stream");
 		response.setHeader("Content-Disposition", "attachment; filename=student.xlsx");
-		
-		Helper.export(students,response);
-		
-		
+
+		Helper.export(students, response);
+
 	}
 }
