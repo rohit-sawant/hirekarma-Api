@@ -1,1 +1,1 @@
-web:    java -cp target/classes:target/dependency/* -Dserver.port=$PORT com/springwalk/sample/SampleApplication
+web: java -Dserver.port=$PORT -jar target/HireKarma-1.0-SNAPSHOT.jar
